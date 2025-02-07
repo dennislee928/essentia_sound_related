@@ -10,9 +10,41 @@ const nextConfig = {
         path: false,
       };
     }
+
+    // 添加 WebAssembly 支持
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      layers: true,
+    };
+
+    // 添加 wasm 文件加載器
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: "webassembly/async",
+    });
+
     return config;
   },
-  // 伺服器設定應該在啟動時指定，而不是在這裡
+
+  // 添加安全配置
+  headers: async () => {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
