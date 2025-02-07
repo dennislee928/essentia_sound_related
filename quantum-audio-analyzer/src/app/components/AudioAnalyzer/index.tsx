@@ -50,7 +50,7 @@ const AudioAnalyzer = () => {
   const essentiaRef = useRef<Essentia | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const [audioFeatures, setAudioFeatures] = useState<{
     pitch: number;
     loudness: number;
@@ -215,7 +215,7 @@ const AudioAnalyzer = () => {
         cancelAnimationFrame(animationId);
       };
     }
-  }, [isRecording]);
+  }, [isRecording, drawSpectrum]);
 
   useEffect(() => {
     return () => {
@@ -224,7 +224,7 @@ const AudioAnalyzer = () => {
       }
       audioContextRef.current?.close();
     };
-  }, []);
+  }, [mediaStream]);
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
