@@ -101,38 +101,41 @@ const AudioAnalyzer = () => {
       try {
         console.log("Starting Essentia initialization...");
 
-        // 先加載並初始化 WASM
-        console.log("Loading WASM module...");
-        const { default: EssentiaWASM } = await import(
-          "essentia.js/dist/essentia-wasm.web"
+        // 導入模塊
+        const essentiaModule = await import("essentia.js");
+        console.log(
+          "Imported module:",
+          JSON.stringify(essentiaModule, null, 2)
         );
-        console.log("WASM module loaded:", EssentiaWASM);
 
-        // 等待 WASM 初始化
-        console.log("Initializing WASM...");
-        await EssentiaWASM();
-        console.log("WASM initialized");
-
-        // 加載 Essentia
-        console.log("Loading Essentia...");
-        const { Essentia } = await import("essentia.js");
+        // 使用 getter 獲取 Essentia 類
+        const EssentiaClass = essentiaModule.Essentia;
+        console.log("Got Essentia class:", EssentiaClass?.toString());
 
         // 創建實例
-        console.log("Creating Essentia instance...");
-        // @ts-expect-error: Essentia 構造函數需要 WASM
-        const essentia = new Essentia(EssentiaWASM);
-        console.log("Essentia instance:", essentia);
+        // @ts-expect-error: Essentia 構造函數類型定義不完整
+        const essentia = new EssentiaClass({});
+        console.log(
+          "Created Essentia instance:",
+          JSON.stringify(essentia, null, 2)
+        );
 
         essentiaRef.current = essentia;
         console.log("Initialization complete");
       } catch (error) {
         console.error("Error initializing Essentia:", error);
-        console.log("Full error object:", error);
-        console.log("Error details:", {
-          name: error instanceof Error ? error.name : "Unknown",
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : "No stack trace",
-        });
+        console.log(
+          "Error details:",
+          JSON.stringify(
+            {
+              name: error instanceof Error ? error.name : "Unknown",
+              message: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : "No stack trace",
+            },
+            null,
+            2
+          )
+        );
         setError("Failed to initialize audio analysis engine");
       }
     };
