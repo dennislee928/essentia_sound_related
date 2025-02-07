@@ -8,6 +8,8 @@ const nextConfig = {
         ...config.resolve.fallback,
         fs: false,
         path: false,
+        crypto: false,
+        stream: false,
       };
     }
 
@@ -15,6 +17,7 @@ const nextConfig = {
     config.experiments = {
       ...config.experiments,
       asyncWebAssembly: true,
+      syncWebAssembly: true,
       layers: true,
       topLevelAwait: true,
     };
@@ -23,7 +26,6 @@ const nextConfig = {
     config.module.rules.push({
       test: /\.wasm$/,
       type: "webassembly/async",
-      loader: "wasm-loader",
     });
 
     return config;
@@ -42,6 +44,10 @@ const nextConfig = {
           {
             key: "Cross-Origin-Embedder-Policy",
             value: "require-corp",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "cross-origin",
           },
         ],
       },
