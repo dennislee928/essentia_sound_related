@@ -99,21 +99,15 @@ const AudioAnalyzer = () => {
   useEffect(() => {
     const initEssentia = async () => {
       try {
-        // 直接導入 essentia.js
-        const essentiaModule = await import("essentia.js");
-        console.log("Imported module:", essentiaModule);
+        // 動態導入 essentia.js 和 WASM
+        const [essentiaModule, wasmModule] = await Promise.all([
+          import("essentia.js"),
+          import("essentia.js/dist/essentia-wasm.web"),
+        ]);
+        console.log("Imported modules:", { essentiaModule, wasmModule });
 
-        // 嘗試獲取 default export
-        const EssentiaClass =
-          essentiaModule.default?.Essentia || essentiaModule.Essentia;
-        console.log("EssentiaClass:", EssentiaClass);
-
-        if (!EssentiaClass) {
-          throw new Error("Failed to get Essentia class");
-        }
-
-        // 創建實例
-        const essentia = new EssentiaClass();
+        // 使用 WASM 模塊初始化 Essentia
+        const essentia = new essentiaModule.Essentia();
         console.log("Essentia instance:", essentia);
 
         essentiaRef.current = essentia;
