@@ -99,18 +99,28 @@ const AudioAnalyzer = () => {
   useEffect(() => {
     const initEssentia = async () => {
       try {
-        // 動態導入 essentia.js 和 WASM
-        const [essentiaModule, wasmModule] = await Promise.all([
-          import("essentia.js"),
-          import("essentia.js/dist/essentia-wasm.web"),
-        ]);
-        console.log("Imported modules:", { essentiaModule, wasmModule });
+        console.log("Starting Essentia initialization...");
 
-        // 使用 WASM 模塊初始化 Essentia
+        // 先加載 WASM 模塊
+        console.log("Loading WASM module...");
+        const wasmModule = await import("essentia.js/dist/essentia-wasm.web");
+        console.log("WASM module imported:", wasmModule);
+
+        console.log("Initializing WASM...");
+        await wasmModule.default();
+        console.log("WASM initialized successfully");
+
+        // 然後初始化 Essentia
+        console.log("Importing Essentia module...");
+        const essentiaModule = await import("essentia.js");
+        console.log("Essentia module imported:", essentiaModule);
+
+        console.log("Creating Essentia instance...");
         const essentia = new essentiaModule.Essentia();
-        console.log("Essentia instance:", essentia);
+        console.log("Essentia instance created:", essentia);
 
         essentiaRef.current = essentia;
+        console.log("Essentia initialization completed successfully");
       } catch (error) {
         console.error("Error initializing Essentia:", error);
         console.log("Error details:", {
@@ -120,6 +130,7 @@ const AudioAnalyzer = () => {
             error instanceof Error
               ? (error as Error & { module?: unknown }).module
               : "Unknown",
+          stack: error instanceof Error ? error.stack : "No stack trace",
         });
         setError("Failed to initialize audio analysis engine");
       }
