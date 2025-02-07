@@ -10,6 +10,8 @@ const nextConfig = {
         path: false,
         crypto: false,
         stream: false,
+        module: false,
+        util: false,
       };
     }
 
