@@ -25,3 +25,8 @@ declare module "essentia.js" {
     computeFeatures(audioData: Float32Array): Promise<AudioFeatures>;
   }
 }
+
+declare module "essentia.js/dist/essentia-wasm.web" {
+  const content: EssentiaModule;
+  export default content;
+}

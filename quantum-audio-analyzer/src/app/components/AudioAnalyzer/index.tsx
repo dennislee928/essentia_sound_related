@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Essentia } from "essentia.js";
+import type { Essentia } from "essentia.js";
 
 const AudioAnalyzer = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -11,8 +11,14 @@ const AudioAnalyzer = () => {
 
   useEffect(() => {
     const initEssentia = async () => {
-      const EssentiaWASM = await import("essentia.js-core");
-      essentiaRef.current = new Essentia(EssentiaWASM);
+      try {
+        const EssentiaWASM = await import("essentia.js/dist/essentia-wasm.web");
+        const { Essentia } = await import("essentia.js");
+        const essentia = new Essentia(EssentiaWASM);
+        essentiaRef.current = essentia;
+      } catch (error) {
+        console.error("Error initializing Essentia:", error);
+      }
     };
 
     initEssentia();
