@@ -1,4 +1,13 @@
 declare module "essentia.js" {
+  export interface AudioFeatures {
+    pitch: number;
+    loudness: number;
+    centroid: number;
+    energy: number;
+    hfc: number;
+    spectrum: Float32Array;
+  }
+
   export interface EssentiaVector {
     size: () => number;
     get: (index: number) => number;
