@@ -99,20 +99,34 @@ const AudioAnalyzer = () => {
   useEffect(() => {
     const initEssentia = async () => {
       try {
+        // 直接導入 essentia.js
         const essentiaModule = await import("essentia.js");
-        console.log("Imported modules:", essentiaModule);
+        console.log("Imported module:", essentiaModule);
 
-        // @ts-expect-error: Essentia.js 類型定義不完整
-        const essentia = new essentiaModule.Essentia(essentiaModule.default);
+        // 嘗試獲取 default export
+        const EssentiaClass =
+          essentiaModule.default?.Essentia || essentiaModule.Essentia;
+        console.log("EssentiaClass:", EssentiaClass);
+
+        if (!EssentiaClass) {
+          throw new Error("Failed to get Essentia class");
+        }
+
+        // 創建實例
+        const essentia = new EssentiaClass();
         console.log("Essentia instance:", essentia);
 
         essentiaRef.current = essentia;
       } catch (error) {
         console.error("Error initializing Essentia:", error);
-        console.log(
-          "Error details:",
-          error instanceof Error ? error.message : String(error)
-        );
+        console.log("Error details:", {
+          name: error instanceof Error ? error.name : "Unknown",
+          message: error instanceof Error ? error.message : String(error),
+          module:
+            error instanceof Error
+              ? (error as Error & { module?: unknown }).module
+              : "Unknown",
+        });
         setError("Failed to initialize audio analysis engine");
       }
     };
