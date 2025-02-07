@@ -128,9 +128,18 @@ const AudioAnalyzer = () => {
           "Error details:",
           JSON.stringify(
             {
-              name: error instanceof Error ? error.name : "Unknown",
-              message: error instanceof Error ? error.message : String(error),
-              stack: error instanceof Error ? error.stack : "No stack trace",
+              name:
+                typeof error === "object" && error
+                  ? (error as Error).name
+                  : "Unknown",
+              message:
+                typeof error === "object" && error
+                  ? (error as Error).message
+                  : String(error),
+              stack:
+                typeof error === "object" && error
+                  ? (error as Error).stack
+                  : "No stack trace",
             },
             null,
             2
@@ -307,12 +316,28 @@ const AudioAnalyzer = () => {
       {/* Error message */}
       {error && (
         <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg">
-          {error === "Failed to initialize audio analysis engine"
-            ? "Failed to initialize audio analysis engine"
-            : error ===
-              "Cannot access microphone. Please ensure permission is granted."
-            ? "Cannot access microphone. Please ensure permission is granted."
-            : error}
+          <div className="font-bold mb-2">錯誤：</div>
+          <div>{error}</div>
+          <div className="mt-2 text-sm font-mono whitespace-pre-wrap">
+            {JSON.stringify(
+              {
+                name:
+                  typeof error === "object" && error
+                    ? (error as Error).name
+                    : "Unknown",
+                message:
+                  typeof error === "object" && error
+                    ? (error as Error).message
+                    : String(error),
+                stack:
+                  typeof error === "object" && error
+                    ? (error as Error).stack
+                    : "No stack trace",
+              },
+              null,
+              2
+            )}
+          </div>
         </div>
       )}
     </div>
