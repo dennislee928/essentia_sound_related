@@ -136,7 +136,10 @@ const AudioAnalyzer = () => {
         console.log("Error details:", {
           name: error instanceof Error ? error.name : "Unknown",
           message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : "No stack trace",
+          module:
+            error instanceof Error
+              ? (error as Error & { module?: unknown }).module
+              : "Unknown",
         });
         setError("Failed to initialize audio analysis engine");
       }
