@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { Essentia } from "essentia.js";
 
 // 定義 Essentia 向量類型
@@ -68,14 +68,42 @@ const AudioAnalyzer = () => {
   });
   const [error, setError] = useState<string | null>(null);
 
+  const drawSpectrum = useCallback(() => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d")!;
+    const { width, height } = canvas;
+
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.fillRect(0, 0, width, height);
+
+    const spectrum = audioFeatures.spectrum;
+    const barWidth = width / spectrum.length;
+
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(0, 255, 0)";
+    ctx.lineWidth = 2;
+
+    for (let i = 0; i < spectrum.length; i++) {
+      const x = i * barWidth;
+      const magnitude = (Math.log10(1 + spectrum[i] * 1000) * height) / 3;
+      if (i === 0) {
+        ctx.moveTo(x, height - magnitude);
+      } else {
+        ctx.lineTo(x, height - magnitude);
+      }
+    }
+    ctx.stroke();
+  }, [audioFeatures.spectrum]);
+
   useEffect(() => {
     const initEssentia = async () => {
       try {
-        const { Essentia, EssentiaWASM } = await import("essentia.js");
-        console.log("Imported modules:", { Essentia, EssentiaWASM });
+        const essentiaModule = await import("essentia.js");
+        console.log("Imported modules:", essentiaModule);
 
-        // 直接使用 EssentiaWASM 對象
-        const essentia = new Essentia(EssentiaWASM);
+        // @ts-expect-error: Essentia.js 類型定義不完整
+        const essentia = new essentiaModule.Essentia(essentiaModule.default);
         console.log("Essentia instance:", essentia);
 
         essentiaRef.current = essentia;
@@ -172,34 +200,6 @@ const AudioAnalyzer = () => {
     } catch (error) {
       console.error("Error analyzing audio:", error);
     }
-  };
-
-  const drawSpectrum = () => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d")!;
-    const { width, height } = canvas;
-
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.fillRect(0, 0, width, height);
-
-    const spectrum = audioFeatures.spectrum;
-    const barWidth = width / spectrum.length;
-
-    ctx.beginPath();
-    ctx.strokeStyle = "rgb(0, 255, 0)";
-    ctx.lineWidth = 2;
-
-    for (let i = 0; i < spectrum.length; i++) {
-      const x = i * barWidth;
-      const magnitude = (Math.log10(1 + spectrum[i] * 1000) * height) / 3;
-      if (i === 0) {
-        ctx.moveTo(x, height - magnitude);
-      } else {
-        ctx.lineTo(x, height - magnitude);
-      }
-    }
-    ctx.stroke();
   };
 
   useEffect(() => {
