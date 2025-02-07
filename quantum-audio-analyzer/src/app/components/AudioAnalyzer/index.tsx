@@ -104,7 +104,7 @@ const AudioAnalyzer = () => {
         // 加載 CDN 版本的 WASM
         const wasmScript = document.createElement("script");
         wasmScript.src =
-          "https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essentia-wasm.web.js";
+          "https://cdn.jsdelivr.net/npm/essentia.js@0.0.9/dist/essentia-wasm.web.js";
         document.body.appendChild(wasmScript);
 
         await new Promise((resolve) => {
@@ -115,7 +115,7 @@ const AudioAnalyzer = () => {
         // 加載 CDN 版本的 Essentia
         const essentiaScript = document.createElement("script");
         essentiaScript.src =
-          "https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essentia.js";
+          "https://cdn.jsdelivr.net/npm/essentia.js@0.0.9/dist/essentia.js";
         document.body.appendChild(essentiaScript);
 
         await new Promise((resolve) => {
@@ -123,8 +123,16 @@ const AudioAnalyzer = () => {
         });
         console.log("Essentia script loaded");
 
+        // 等待一下確保腳本完全加載
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         // @ts-expect-error: 全局 Essentia 對象
-        const essentia = new window.Essentia();
+        if (typeof window.EssentiaWASM === "undefined") {
+          throw new Error("EssentiaWASM not loaded");
+        }
+
+        // @ts-expect-error: 全局 Essentia 對象
+        const essentia = new window.Essentia(window.EssentiaWASM);
         console.log("Essentia instance created:", essentia);
 
         essentiaRef.current = essentia;
