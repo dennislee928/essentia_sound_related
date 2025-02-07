@@ -101,45 +101,37 @@ const AudioAnalyzer = () => {
       try {
         console.log("Starting Essentia initialization...");
 
-        // 加載 CDN 版本的 WASM
-        console.log("Loading WASM from CDN...");
-        const wasmScript = document.createElement("script");
-        wasmScript.src =
-          "https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essentia-wasm.web.js";
-        document.body.appendChild(wasmScript);
+        // 先加載並初始化 WASM
+        console.log("Loading WASM module...");
+        const { default: EssentiaWASM } = await import(
+          "essentia.js/dist/essentia-wasm.web"
+        );
+        console.log("WASM module loaded:", EssentiaWASM);
 
-        await new Promise((resolve) => {
-          wasmScript.onload = resolve;
-        });
-        console.log("WASM script loaded");
+        // 等待 WASM 初始化
+        console.log("Initializing WASM...");
+        await EssentiaWASM();
+        console.log("WASM initialized");
 
-        // 加載 essentia.js
-        console.log("Loading Essentia from CDN...");
-        const essentiaScript = document.createElement("script");
-        essentiaScript.src =
-          "https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essentia.js";
-        document.body.appendChild(essentiaScript);
+        // 加載 Essentia
+        console.log("Loading Essentia...");
+        const { Essentia } = await import("essentia.js");
 
-        await new Promise((resolve) => {
-          essentiaScript.onload = resolve;
-        });
-        console.log("Essentia script loaded");
-
-        // @ts-expect-error: 全局 Essentia 對象未在 Window 類型中定義
-        const essentia = new window.Essentia();
-        console.log("Essentia instance created:", essentia);
+        // 創建實例
+        console.log("Creating Essentia instance...");
+        // @ts-expect-error: Essentia 構造函數需要 WASM
+        const essentia = new Essentia(EssentiaWASM);
+        console.log("Essentia instance:", essentia);
 
         essentiaRef.current = essentia;
-        console.log("Essentia initialization completed successfully");
+        console.log("Initialization complete");
       } catch (error) {
         console.error("Error initializing Essentia:", error);
+        console.log("Full error object:", error);
         console.log("Error details:", {
           name: error instanceof Error ? error.name : "Unknown",
           message: error instanceof Error ? error.message : String(error),
-          module:
-            error instanceof Error
-              ? (error as Error & { module?: unknown }).module
-              : "Unknown",
+          stack: error instanceof Error ? error.stack : "No stack trace",
         });
         setError("Failed to initialize audio analysis engine");
       }
@@ -148,9 +140,6 @@ const AudioAnalyzer = () => {
     initEssentia();
     return () => {
       audioContextRef.current?.close();
-      // 清理腳本
-      const scripts = document.querySelectorAll('script[src*="essentia"]');
-      scripts.forEach((script) => script.remove());
     };
   }, []);
 
