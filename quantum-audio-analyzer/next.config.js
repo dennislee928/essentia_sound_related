@@ -17,11 +17,8 @@ const nextConfig = {
 
     // 添加 WebAssembly 支持
     config.experiments = {
-      ...config.experiments,
       asyncWebAssembly: true,
-      syncWebAssembly: true,
       layers: true,
-      topLevelAwait: true,
     };
 
     // 添加 wasm 文件加載器
@@ -34,22 +31,22 @@ const nextConfig = {
   },
 
   // 添加安全配置
-  headers: async () => {
+  async headers() {
     return [
       {
         source: "/:path*",
         headers: [
           {
-            key: "Cross-Origin-Opener-Policy",
-            value: "same-origin",
-          },
-          {
             key: "Cross-Origin-Embedder-Policy",
             value: "require-corp",
           },
           {
-            key: "Cross-Origin-Resource-Policy",
-            value: "cross-origin",
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
           },
         ],
       },
