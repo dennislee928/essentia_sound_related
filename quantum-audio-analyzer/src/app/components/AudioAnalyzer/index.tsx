@@ -13,11 +13,8 @@ const AudioAnalyzer = () => {
     const initEssentia = async () => {
       try {
         const essentiaModule = await import("essentia.js");
-        console.log("Essentia module:", essentiaModule);
-
-        // 先初始化 WASM 模組
+        // @ts-ignore
         const EssentiaWASM = await essentiaModule.EssentiaWASM();
-        // 然後創建 Essentia 實例
         const essentia = new essentiaModule.Essentia(EssentiaWASM);
         essentiaRef.current = essentia;
       } catch (error) {
