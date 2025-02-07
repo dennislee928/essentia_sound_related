@@ -16,12 +16,14 @@ const nextConfig = {
       ...config.experiments,
       asyncWebAssembly: true,
       layers: true,
+      topLevelAwait: true,
     };
 
     // 添加 wasm 文件加載器
     config.module.rules.push({
       test: /\.wasm$/,
       type: "webassembly/async",
+      loader: "wasm-loader",
     });
 
     return config;
