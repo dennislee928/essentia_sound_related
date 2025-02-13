@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import type { Essentia } from "essentia.js";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { Essentia as EssentiaType } from "essentia.js";
 
 // 定義 Essentia 向量類型
 type EssentiaVector = {
@@ -43,29 +43,25 @@ interface EssentiaInterface {
   HFC: (spectrum: EssentiaVector) => EssentiaResults["hfc"];
 }
 
-const AudioAnalyzer = () => {
+const AudioAnalyzer: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const essentiaRef = useRef<Essentia | null>(null);
+  const essentiaRef = useRef<EssentiaType | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number | undefined>(undefined);
-  const [audioFeatures, setAudioFeatures] = useState<{
-    pitch: number;
-    loudness: number;
-    centroid: number;
-    energy: number;
-    hfc: number;
-    spectrum: Float32Array;
-  }>({
-    pitch: 0,
-    loudness: 0,
-    centroid: 0,
-    energy: 0,
-    hfc: 0,
-    spectrum: new Float32Array(),
-  });
+  const spectrumCanvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const [audioFeatures, setAudioFeatures] = useState(
+    {} as {
+      pitch: number;
+      loudness: number;
+      centroid: number;
+      energy: number;
+      hfc: number;
+      spectrum: Float32Array;
+    }
+  );
   const [error, setError] = useState<string | null>(null);
 
   const drawSpectrum = useCallback(() => {
@@ -96,15 +92,17 @@ const AudioAnalyzer = () => {
     ctx.stroke();
   }, [audioFeatures.spectrum]);
 
+  // 初始化 Essentia
   useEffect(() => {
     const initEssentia = async () => {
       try {
         console.log("Starting Essentia initialization...");
 
-        // 加載 CDN 版本的 WASM
+        // 使用 unpkg CDN
         const wasmScript = document.createElement("script");
         wasmScript.src =
-          "https://cdn.jsdelivr.net/npm/essentia.js@0.0.9/dist/essentia-wasm.web.js";
+          "https://unpkg.com/essentia.js@0.0.9/dist/essentia-wasm.web.js";
+        wasmScript.type = "application/javascript"; // 明確指定 MIME 類型
         document.body.appendChild(wasmScript);
 
         await new Promise((resolve) => {
@@ -112,10 +110,10 @@ const AudioAnalyzer = () => {
         });
         console.log("WASM script loaded");
 
-        // 加載 CDN 版本的 Essentia
         const essentiaScript = document.createElement("script");
         essentiaScript.src =
-          "https://cdn.jsdelivr.net/npm/essentia.js@0.0.9/dist/essentia.js";
+          "https://unpkg.com/essentia.js@0.0.9/dist/essentia.js";
+        essentiaScript.type = "application/javascript"; // 明確指定 MIME 類型
         document.body.appendChild(essentiaScript);
 
         await new Promise((resolve) => {
@@ -123,7 +121,6 @@ const AudioAnalyzer = () => {
         });
         console.log("Essentia script loaded");
 
-        // 等待一下確保腳本完全加載
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // @ts-expect-error: 全局 Essentia 對象
@@ -139,30 +136,18 @@ const AudioAnalyzer = () => {
         console.log("Initialization complete");
       } catch (error) {
         console.error("Error initializing Essentia:", error);
-        console.log("Error details:", {
-          name:
-            typeof error === "object" && error
-              ? (error as Error).name
-              : "Unknown",
-          message:
-            typeof error === "object" && error
-              ? (error as Error).message
-              : String(error),
-          stack:
-            typeof error === "object" && error
-              ? (error as Error).stack
-              : "No stack trace",
-        });
         setError("Failed to initialize audio analysis engine");
       }
     };
 
     initEssentia();
+
     return () => {
-      audioContextRef.current?.close();
-      // 清理腳本
-      const scripts = document.querySelectorAll('script[src*="essentia"]');
-      scripts.forEach((script) => script.remove());
+      const ctx = audioContextRef.current;
+      if (ctx && ctx.state !== "closed") {
+        ctx.close().catch(() => {});
+      }
+      audioContextRef.current = null;
     };
   }, []);
 
@@ -193,7 +178,7 @@ const AudioAnalyzer = () => {
       });
       setMediaStream(stream);
       const source = audioContextRef.current.createMediaStreamSource(stream);
-      source.connect(analyzerRef.current!);
+      connectAudioSource(source);
       setIsRecording(true);
     } catch (err) {
       setError(
@@ -260,97 +245,170 @@ const AudioAnalyzer = () => {
     }
   }, [isRecording, drawSpectrum]);
 
+  // 單獨處理 AudioContext 的清理
   useEffect(() => {
     return () => {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach((track) => track.stop());
-      }
-      audioContextRef.current?.close();
+      // 使用 setTimeout 來延遲清理，避免在 React 的清理階段執行
+      setTimeout(() => {
+        const ctx = audioContextRef.current;
+        if (ctx && ctx.state !== "closed") {
+          ctx.close().catch(() => {});
+        }
+        audioContextRef.current = null;
+      }, 0);
     };
-  }, [mediaStream]);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !audioContextRef.current) return;
+
+    // 創建分析器節點
+    const analyser = audioContextRef.current.createAnalyser();
+    analyser.fftSize = 2048;
+    analyzerRef.current = analyser;
+
+    // 設置 canvas
+    canvas.width = canvas.clientWidth * window.devicePixelRatio;
+    canvas.height = canvas.clientHeight * window.devicePixelRatio;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const draw = () => {
+      animationFrameRef.current = requestAnimationFrame(draw);
+
+      analyser.getByteFrequencyData(dataArray);
+
+      ctx.fillStyle = "rgb(0, 0, 0)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const barWidth = (canvas.width / bufferLength) * 2.5;
+      let barHeight;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = dataArray[i] * 2;
+
+        const hue = (i / bufferLength) * 360;
+        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+        x += barWidth + 1;
+      }
+    };
+
+    draw();
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+  // 連接音頻源到分析器
+  const connectAudioSource = useCallback(
+    (source: MediaStreamAudioSourceNode) => {
+      if (analyzerRef.current) {
+        source.connect(analyzerRef.current);
+        analyzerRef.current.connect(audioContextRef.current!.destination);
+      }
+    },
+    []
+  );
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
-      <button
-        onClick={isRecording ? stopRecording : startRecording}
-        className={`px-4 py-2 rounded-full font-medium transition-colors ${
-          isRecording
-            ? "bg-red-500 hover:bg-red-600 text-white"
-            : "bg-blue-500 hover:bg-blue-600 text-white"
-        }`}
-      >
-        {isRecording ? "Stop Recording" : "Start Recording"}
-      </button>
+    <div className="relative w-full h-full">
+      <canvas
+        ref={canvasRef}
+        className="absolute top-0 left-0 w-full h-full bg-black"
+      />
+      <div className="p-4 bg-white rounded-lg shadow-md">
+        <button
+          onClick={isRecording ? stopRecording : startRecording}
+          className={`px-4 py-2 rounded-full font-medium transition-colors ${
+            isRecording
+              ? "bg-red-500 hover:bg-red-600 text-white"
+              : "bg-blue-500 hover:bg-blue-600 text-white"
+          }`}
+        >
+          {isRecording ? "Stop Recording" : "Start Recording"}
+        </button>
 
-      <div className="mt-6">
-        <canvas
-          ref={canvasRef}
-          width={800}
-          height={200}
-          className="w-full border border-gray-300 rounded-lg bg-black"
-        />
-      </div>
+        <div className="mt-6">
+          <canvas
+            ref={spectrumCanvasRef}
+            width={800}
+            height={200}
+            className="w-full border border-gray-300 rounded-lg bg-black"
+          />
+        </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4">
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <span className="text-gray-600">Pitch:</span>
-          <span className="ml-2 font-medium">
-            {audioFeatures.pitch.toFixed(1)} Hz
-          </span>
-        </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <span className="text-gray-600">Loudness:</span>
-          <span className="ml-2 font-medium">
-            {audioFeatures.loudness.toFixed(1)} dB
-          </span>
-        </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <span className="text-gray-600">Spectral Centroid:</span>
-          <span className="ml-2 font-medium">
-            {audioFeatures.centroid.toFixed(1)} Hz
-          </span>
-        </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <span className="text-gray-600">Spectral Energy:</span>
-          <span className="ml-2 font-medium">
-            {audioFeatures.energy.toFixed(3)}
-          </span>
-        </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <span className="text-gray-600">Harmonic/Noise Ratio:</span>
-          <span className="ml-2 font-medium">
-            {audioFeatures.hfc.toFixed(1)}
-          </span>
-        </div>
-      </div>
-
-      {/* Error message */}
-      {error && (
-        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg">
-          <div className="font-bold mb-2">錯誤：</div>
-          <div>{error}</div>
-          <div className="mt-2 text-sm font-mono whitespace-pre-wrap">
-            {JSON.stringify(
-              {
-                name:
-                  typeof error === "object" && error
-                    ? (error as Error).name
-                    : "Unknown",
-                message:
-                  typeof error === "object" && error
-                    ? (error as Error).message
-                    : String(error),
-                stack:
-                  typeof error === "object" && error
-                    ? (error as Error).stack
-                    : "No stack trace",
-              },
-              null,
-              2
-            )}
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <span className="text-gray-600">Pitch:</span>
+            <span className="ml-2 font-medium">
+              {audioFeatures.pitch.toFixed(1)} Hz
+            </span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <span className="text-gray-600">Loudness:</span>
+            <span className="ml-2 font-medium">
+              {audioFeatures.loudness.toFixed(1)} dB
+            </span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <span className="text-gray-600">Spectral Centroid:</span>
+            <span className="ml-2 font-medium">
+              {audioFeatures.centroid.toFixed(1)} Hz
+            </span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <span className="text-gray-600">Spectral Energy:</span>
+            <span className="ml-2 font-medium">
+              {audioFeatures.energy.toFixed(3)}
+            </span>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <span className="text-gray-600">Harmonic/Noise Ratio:</span>
+            <span className="ml-2 font-medium">
+              {audioFeatures.hfc.toFixed(1)}
+            </span>
           </div>
         </div>
-      )}
+
+        {/* Error message */}
+        {error && (
+          <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg">
+            <div className="font-bold mb-2">錯誤：</div>
+            <div>{error}</div>
+            <div className="mt-2 text-sm font-mono whitespace-pre-wrap">
+              {JSON.stringify(
+                {
+                  name:
+                    typeof error === "object" && error
+                      ? (error as Error).name
+                      : "Unknown",
+                  message:
+                    typeof error === "object" && error
+                      ? (error as Error).message
+                      : String(error),
+                  stack:
+                    typeof error === "object" && error
+                      ? (error as Error).stack
+                      : "No stack trace",
+                },
+                null,
+                2
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
