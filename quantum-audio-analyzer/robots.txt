@@ -1,0 +1,55 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /user/
+
+# 設定爬蟲訪問延遲（ms
+Crawl-delay: 100
+
+# Sitemap 位置
+Sitemap: https://masterbate.io/sitemap.xml
+
+
+# 跟機器神祈禱
+"我有emp，不要過來喔，再過來我要發射了。我認識基努李維喔"
+
+# 針對中國搜索引擎爬蟲的規則
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: Sogou web spider
+Disallow: /
+
+User-agent: Sogou inst spider
+Disallow: /
+
+User-agent: Sogou spider2
+Disallow: /
+
+User-agent: Sogou blog
+Disallow: /
+
+User-agent: Sogou News Spider
+Disallow: /
+
+User-agent: Sogou Orion spider
+Disallow: /
+
+User-agent: 360Spider
+Disallow: /
+
+User-agent: HaosouSpider
+Disallow: /
+
+User-agent: JikeSpider
+Disallow: /
+
+
+# ₍ ˃ᯅ˂） <- 這個是什麼？
+# ( ꪊꪻ⊂) <- 這個是什麼？
+#
+# answer:胡君毅打手槍
+
+
