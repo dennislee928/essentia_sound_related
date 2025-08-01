@@ -12,6 +12,7 @@
     "@tensorflow/tfjs": "^4.22.0",
     "essentia.js": "0.0.9",
     "next": "15.1.6",
+    "next-intl": "^4.3.4",
     "qiskit": "^0.9.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

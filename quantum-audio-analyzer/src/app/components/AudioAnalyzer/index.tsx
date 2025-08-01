@@ -1,53 +1,12 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Essentia as EssentiaType } from "essentia.js";
-
-// 定義 Essentia 向量類型
-type EssentiaVector = {
-  size: () => number;
-  get: (index: number) => number;
-  set: (index: number, value: number) => void;
-};
-
-// 定義 Essentia 方法的返回類型
-interface EssentiaResults {
-  pitch: { pitch: number };
-  loudness: { loudness: number };
-  spectrum: { spectrum: EssentiaVector };
-  centroid: { centroid: number };
-  energy: { energy: number };
-  hfc: { hfc: number };
-}
-
-// 定義 Essentia 方法的類型
-interface EssentiaInterface {
-  arrayToVector: (array: Float32Array) => EssentiaVector;
-  vectorToArray: (vector: EssentiaVector) => Float32Array;
-  PitchYinProbabilistic: (
-    vector: EssentiaVector,
-    config: {
-      frameSize: number;
-      sampleRate: number;
-      minFrequency: number;
-      maxFrequency: number;
-    }
-  ) => EssentiaResults["pitch"];
-  Loudness: (vector: EssentiaVector) => EssentiaResults["loudness"];
-  Spectrum: (
-    vector: EssentiaVector,
-    config: { size: number }
-  ) => EssentiaResults["spectrum"];
-  Centroid: (spectrum: EssentiaVector) => EssentiaResults["centroid"];
-  Energy: (spectrum: EssentiaVector) => EssentiaResults["energy"];
-  HFC: (spectrum: EssentiaVector) => EssentiaResults["hfc"];
-}
 
 const AudioAnalyzer: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const essentiaRef = useRef<EssentiaType | null>(null);
+
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const spectrumCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,8 +22,8 @@ const AudioAnalyzer: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const drawSpectrum = useCallback(() => {
-    if (!canvasRef.current || !audioFeatures.spectrum) return;
-    const canvas = canvasRef.current;
+    if (!spectrumCanvasRef.current || !audioFeatures.spectrum) return;
+    const canvas = spectrumCanvasRef.current;
     const ctx = canvas.getContext("2d")!;
     const { width, height } = canvas;
 
@@ -82,7 +41,8 @@ const AudioAnalyzer: React.FC = () => {
 
     for (let i = 0; i < spectrum.length; i++) {
       const x = i * barWidth;
-      const magnitude = (Math.log10(1 + spectrum[i] * 1000) * height) / 3;
+      const magnitude =
+        (Math.log10(1 + Math.abs(spectrum[i]) * 1000) * height) / 4;
       if (i === 0) {
         ctx.moveTo(x, height - magnitude);
       } else {
@@ -92,55 +52,56 @@ const AudioAnalyzer: React.FC = () => {
     ctx.stroke();
   }, [audioFeatures.spectrum]);
 
-  // 初始化 Essentia
+  const drawWaveform = useCallback((timeData: Float32Array) => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d")!;
+    const { width, height } = canvas;
+
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(0, 200, 255)";
+    ctx.lineWidth = 2;
+
+    const sliceWidth = width / timeData.length;
+    let x = 0;
+
+    for (let i = 0; i < timeData.length; i++) {
+      const v = (timeData[i] * height) / 2;
+      const y = height / 2 + v;
+
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+
+      x += sliceWidth;
+    }
+
+    ctx.stroke();
+  }, []);
+
+  // 初始化音頻分析引擎
   useEffect(() => {
-    const initEssentia = async () => {
+    const initAudioEngine = async () => {
       try {
-        console.log("Starting Essentia initialization...");
-
-        // 使用 unpkg CDN
-        const wasmScript = document.createElement("script");
-        wasmScript.src =
-          "https://unpkg.com/essentia.js@0.0.9/dist/essentia-wasm.web.js";
-        wasmScript.type = "application/javascript"; // 明確指定 MIME 類型
-        document.body.appendChild(wasmScript);
-
-        await new Promise((resolve) => {
-          wasmScript.onload = resolve;
-        });
-        console.log("WASM script loaded");
-
-        const essentiaScript = document.createElement("script");
-        essentiaScript.src =
-          "https://unpkg.com/essentia.js@0.0.9/dist/essentia.js";
-        essentiaScript.type = "application/javascript"; // 明確指定 MIME 類型
-        document.body.appendChild(essentiaScript);
-
-        await new Promise((resolve) => {
-          essentiaScript.onload = resolve;
-        });
-        console.log("Essentia script loaded");
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // @ts-expect-error: 全局 Essentia 對象
-        if (typeof window.EssentiaWASM === "undefined") {
-          throw new Error("EssentiaWASM not loaded");
-        }
-
-        // @ts-expect-error: 全局 Essentia 對象
-        const essentia = new window.Essentia(window.EssentiaWASM);
-        console.log("Essentia instance created:", essentia);
-
-        essentiaRef.current = essentia;
-        console.log("Initialization complete");
+        console.log("Initializing native Web Audio API...");
+        // 使用原生 Web Audio API 而不是 Essentia.js
+        // 這樣可以避免外部依賴的問題
+        console.log("Audio engine ready");
       } catch (error) {
-        console.error("Error initializing Essentia:", error);
-        setError("Failed to initialize audio analysis engine");
+        console.error("Error initializing audio engine:", error);
+        setError(
+          "Failed to initialize audio analysis engine: " +
+            (error instanceof Error ? error.message : String(error))
+        );
       }
     };
 
-    initEssentia();
+    initAudioEngine();
 
     return () => {
       const ctx = audioContextRef.current;
@@ -189,42 +150,72 @@ const AudioAnalyzer: React.FC = () => {
   };
 
   const analyzeAudio = async () => {
-    if (!analyzerRef.current || !essentiaRef.current) return;
+    if (!analyzerRef.current) return;
 
     const analyzer = analyzerRef.current;
     const bufferLength = analyzer.frequencyBinCount;
     const timeData = new Float32Array(bufferLength);
+    const freqData = new Uint8Array(bufferLength);
+    const floatFreqData = new Float32Array(bufferLength);
+
     analyzer.getFloatTimeDomainData(timeData);
+    analyzer.getByteFrequencyData(freqData);
+    analyzer.getFloatFrequencyData(floatFreqData);
 
     try {
-      const essentia = essentiaRef.current as unknown as EssentiaInterface;
+      // 計算基本音頻特徵
 
-      const vector = essentia.arrayToVector(timeData);
+      // 1. 響度（平均音量）
+      const loudness =
+        freqData.reduce((sum, value) => sum + value, 0) / freqData.length;
 
-      const pitchResult = essentia.PitchYinProbabilistic(vector, {
-        frameSize: 4096,
-        sampleRate: 44100,
-        minFrequency: 20,
-        maxFrequency: 4000,
-      });
+      // 2. 頻譜重心（亮度）
+      let weightedSum = 0;
+      let magnitudeSum = 0;
+      for (let i = 0; i < freqData.length; i++) {
+        const magnitude = freqData[i];
+        weightedSum += magnitude * i;
+        magnitudeSum += magnitude;
+      }
+      const centroid =
+        magnitudeSum > 0
+          ? (weightedSum / magnitudeSum) * (22050 / freqData.length)
+          : 0;
 
-      const loudnessResult = essentia.Loudness(vector);
-      const spectrumResult = essentia.Spectrum(vector, {
-        size: 4096,
-      });
-      const spectrum = essentia.vectorToArray(spectrumResult.spectrum);
-      const centroidResult = essentia.Centroid(spectrumResult.spectrum);
-      const energyResult = essentia.Energy(spectrumResult.spectrum);
-      const hfcResult = essentia.HFC(spectrumResult.spectrum);
+      // 3. 能量
+      const energy =
+        freqData.reduce((sum, value) => sum + value * value, 0) /
+        freqData.length;
+
+      // 4. 簡單的基頻估算（找到最大峰值）
+      let maxIndex = 0;
+      let maxValue = 0;
+      for (let i = 1; i < freqData.length / 4; i++) {
+        if (freqData[i] > maxValue) {
+          maxValue = freqData[i];
+          maxIndex = i;
+        }
+      }
+      const pitch = maxIndex * (22050 / freqData.length);
+
+      // 5. 高頻內容（HFC）
+      let hfc = 0;
+      for (let i = Math.floor(freqData.length / 2); i < freqData.length; i++) {
+        hfc += freqData[i] * freqData[i];
+      }
+      hfc = hfc / (freqData.length / 2);
 
       setAudioFeatures({
-        pitch: pitchResult.pitch,
-        loudness: loudnessResult.loudness,
-        centroid: centroidResult.centroid,
-        energy: energyResult.energy,
-        hfc: hfcResult.hfc,
-        spectrum: spectrum,
+        pitch,
+        loudness,
+        centroid,
+        energy,
+        hfc,
+        spectrum: floatFreqData,
       });
+
+      // 繪製波形
+      drawWaveform(timeData);
     } catch (error) {
       console.error("Error analyzing audio:", error);
     }
@@ -232,15 +223,20 @@ const AudioAnalyzer: React.FC = () => {
 
   useEffect(() => {
     if (isRecording) {
-      const intervalId = setInterval(analyzeAudio, 50);
-      const animationId = requestAnimationFrame(function animate() {
-        drawSpectrum();
-        animationFrameRef.current = requestAnimationFrame(animate);
-      });
+      const animate = () => {
+        if (isRecording) {
+          analyzeAudio();
+          drawSpectrum();
+          animationFrameRef.current = requestAnimationFrame(animate);
+        }
+      };
+
+      animate();
 
       return () => {
-        clearInterval(intervalId);
-        cancelAnimationFrame(animationId);
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
       };
     }
   }, [isRecording, drawSpectrum]);
@@ -322,12 +318,9 @@ const AudioAnalyzer: React.FC = () => {
   );
 
   return (
-    <div className="relative w-full h-full">
-      <canvas
-        ref={canvasRef}
-        className="absolute top-0 left-0 w-full h-full bg-black"
-      />
-      <div className="p-4 bg-white rounded-lg shadow-md">
+    <div className="w-full">
+      <div className="p-4 bg-white rounded-lg shadow-md items-center">
+        <h2 className="text-2xl font-bold mb-4 text-center">量子音頻分析器</h2>
         <button
           onClick={isRecording ? stopRecording : startRecording}
           className={`px-4 py-2 rounded-full font-medium transition-colors ${
@@ -340,6 +333,7 @@ const AudioAnalyzer: React.FC = () => {
         </button>
 
         <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-3">頻譜分析</h3>
           <canvas
             ref={spectrumCanvasRef}
             width={800}
@@ -348,36 +342,49 @@ const AudioAnalyzer: React.FC = () => {
           />
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <span className="text-gray-600">Pitch:</span>
-            <span className="ml-2 font-medium">
-              {audioFeatures.pitch.toFixed(1)} Hz
-            </span>
-          </div>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <span className="text-gray-600">Loudness:</span>
-            <span className="ml-2 font-medium">
-              {audioFeatures.loudness.toFixed(1)} dB
-            </span>
-          </div>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <span className="text-gray-600">Spectral Centroid:</span>
-            <span className="ml-2 font-medium">
-              {audioFeatures.centroid.toFixed(1)} Hz
-            </span>
-          </div>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <span className="text-gray-600">Spectral Energy:</span>
-            <span className="ml-2 font-medium">
-              {audioFeatures.energy.toFixed(3)}
-            </span>
-          </div>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <span className="text-gray-600">Harmonic/Noise Ratio:</span>
-            <span className="ml-2 font-medium">
-              {audioFeatures.hfc.toFixed(1)}
-            </span>
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-3">波形可視化</h3>
+          <canvas
+            ref={canvasRef}
+            width={800}
+            height={200}
+            className="w-full border border-gray-300 rounded-lg bg-black"
+          />
+        </div>
+
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-3">音頻特徵</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <span className="text-gray-600">Pitch:</span>
+              <span className="ml-2 font-medium">
+                {audioFeatures.pitch.toFixed(1)} Hz
+              </span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <span className="text-gray-600">Loudness:</span>
+              <span className="ml-2 font-medium">
+                {audioFeatures.loudness.toFixed(1)} dB
+              </span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <span className="text-gray-600">Spectral Centroid:</span>
+              <span className="ml-2 font-medium">
+                {audioFeatures.centroid.toFixed(1)} Hz
+              </span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <span className="text-gray-600">Spectral Energy:</span>
+              <span className="ml-2 font-medium">
+                {audioFeatures.energy.toFixed(3)}
+              </span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <span className="text-gray-600">Harmonic/Noise Ratio:</span>
+              <span className="ml-2 font-medium">
+                {audioFeatures.hfc.toFixed(1)}
+              </span>
+            </div>
           </div>
         </div>
 

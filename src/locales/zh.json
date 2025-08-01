@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "量子音頻分析系統",
+    "audioAnalyzer": "量子音頻分析器",
+    "quantumVisualizer": "量子可視化",
+    "spectrumAnalysis": "頻譜分析",
+    "waveformVisualization": "波形可視化",
+    "audioFeatures": "音頻特徵",
+    "fourierTransform": "傅立葉轉換可視化"
+  },
+  "controls": {
+    "startRecording": "開始錄音",
+    "stopRecording": "停止錄音",
+    "language": "語言",
+    "theme": "主題",
+    "light": "淺色",
+    "dark": "深色"
+  },
+  "features": {
+    "pitch": "音高",
+    "loudness": "響度",
+    "spectralCentroid": "頻譜重心",
+    "spectralEnergy": "頻譜能量",
+    "harmonicNoiseRatio": "和諧/噪音比率"
+  },
+  "units": {
+    "hz": "Hz",
+    "db": "dB"
+  },
+  "errors": {
+    "title": "錯誤：",
+    "microphoneAccess": "無法訪問麥克風。請確保已授予權限。"
+  }
+}

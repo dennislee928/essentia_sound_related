@@ -1,0 +1,34 @@
+{
+  "app": {
+    "title": "Quantum Audio Analysis System",
+    "audioAnalyzer": "Quantum Audio Analyzer",
+    "quantumVisualizer": "Quantum Visualizer",
+    "spectrumAnalysis": "Spectrum Analysis",
+    "waveformVisualization": "Waveform Visualization",
+    "audioFeatures": "Audio Features",
+    "fourierTransform": "Fourier Transform Visualization"
+  },
+  "controls": {
+    "startRecording": "Start Recording",
+    "stopRecording": "Stop Recording",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "features": {
+    "pitch": "Pitch",
+    "loudness": "Loudness",
+    "spectralCentroid": "Spectral Centroid",
+    "spectralEnergy": "Spectral Energy",
+    "harmonicNoiseRatio": "Harmonic/Noise Ratio"
+  },
+  "units": {
+    "hz": "Hz",
+    "db": "dB"
+  },
+  "errors": {
+    "title": "Error:",
+    "microphoneAccess": "Cannot access microphone. Please ensure permission is granted."
+  }
+}
