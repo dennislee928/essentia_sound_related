@@ -52,20 +52,18 @@ const AudioAnalyzer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const spectrumCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const [audioFeatures, setAudioFeatures] = useState(
-    {} as {
-      pitch: number;
-      loudness: number;
-      centroid: number;
-      energy: number;
-      hfc: number;
-      spectrum: Float32Array;
-    }
-  );
+  const [audioFeatures, setAudioFeatures] = useState({
+    pitch: 0,
+    loudness: 0,
+    centroid: 0,
+    energy: 0,
+    hfc: 0,
+    spectrum: new Float32Array(1024) as Float32Array,
+  });
   const [error, setError] = useState<string | null>(null);
 
   const drawSpectrum = useCallback(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !audioFeatures.spectrum) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d")!;
     const { width, height } = canvas;
@@ -74,6 +72,8 @@ const AudioAnalyzer: React.FC = () => {
     ctx.fillRect(0, 0, width, height);
 
     const spectrum = audioFeatures.spectrum;
+    if (spectrum.length === 0) return;
+
     const barWidth = width / spectrum.length;
 
     ctx.beginPath();
