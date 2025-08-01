@@ -1,8 +1,28 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useApp } from "../../context/AppContext";
+import QuantumVisualizer from "../QuantumVisualizer";
 
-const AudioAnalyzer: React.FC = () => {
+interface AudioFeatures {
+  pitch: number;
+  loudness: number;
+  centroid: number;
+  energy: number;
+  hfc: number;
+  spectrum: Float32Array;
+}
+
+interface AudioAnalyzerProps {
+  onAudioData?: (data: Float32Array) => void;
+  onAudioFeatures?: (features: AudioFeatures) => void;
+}
+
+const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
+  onAudioData,
+  onAudioFeatures,
+}) => {
+  const { t } = useApp();
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -205,14 +225,26 @@ const AudioAnalyzer: React.FC = () => {
       }
       hfc = hfc / (freqData.length / 2);
 
-      setAudioFeatures({
+      const features = {
         pitch,
         loudness,
         centroid,
         energy,
         hfc,
         spectrum: floatFreqData,
-      });
+      };
+
+      setAudioFeatures(features);
+
+      // 傳送音頻數據給父組件
+      if (onAudioData) {
+        onAudioData(timeData);
+      }
+
+      // 傳送音頻特徵給父組件
+      if (onAudioFeatures) {
+        onAudioFeatures(features);
+      }
 
       // 繪製波形
       drawWaveform(timeData);
@@ -239,7 +271,7 @@ const AudioAnalyzer: React.FC = () => {
         }
       };
     }
-  }, [isRecording, drawSpectrum]);
+  }, [isRecording]);
 
   // 單獨處理 AudioContext 的清理
   useEffect(() => {
@@ -318,70 +350,86 @@ const AudioAnalyzer: React.FC = () => {
   );
 
   return (
-    <div className="w-full">
-      <div className="p-4 bg-white rounded-lg shadow-md items-center">
-        <h2 className="text-2xl font-bold mb-4 text-center">量子音頻分析器</h2>
+    <div className="w-full text-center">
+      <div className="theme-card p-6 rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold mb-4 theme-text">
+          {t("app.audioAnalyzer")}
+        </h2>
         <button
           onClick={isRecording ? stopRecording : startRecording}
-          className={`px-4 py-2 rounded-full font-medium transition-colors ${
+          className={`px-6 py-3 rounded-full font-medium transition-colors ${
             isRecording
               ? "bg-red-500 hover:bg-red-600 text-white"
               : "bg-blue-500 hover:bg-blue-600 text-white"
           }`}
         >
-          {isRecording ? "Stop Recording" : "Start Recording"}
+          {isRecording
+            ? t("controls.stopRecording")
+            : t("controls.startRecording")}
         </button>
-
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-3">頻譜分析</h3>
+        <QuantumVisualizer audioFeatures={audioFeatures} />
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4 theme-text">
+            {t("app.spectrumAnalysis")}
+          </h3>
           <canvas
             ref={spectrumCanvasRef}
             width={800}
             height={200}
-            className="w-full border border-gray-300 rounded-lg bg-black"
+            className="w-full border theme-border rounded-lg bg-black"
           />
         </div>
 
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-3">波形可視化</h3>
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4 theme-text">
+            {t("app.waveformVisualization")}
+          </h3>
           <canvas
             ref={canvasRef}
             width={800}
             height={200}
-            className="w-full border border-gray-300 rounded-lg bg-black"
+            className="w-full border theme-border rounded-lg bg-black"
           />
         </div>
 
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-3">音頻特徵</h3>
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4 theme-text">
+            {t("app.audioFeatures")}
+          </h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <span className="text-gray-600">Pitch:</span>
-              <span className="ml-2 font-medium">
-                {audioFeatures.pitch.toFixed(1)} Hz
+            <div className="p-3 theme-card rounded-lg border theme-border">
+              <span className="theme-muted">{t("features.pitch")}:</span>
+              <span className="ml-2 font-medium theme-text">
+                {audioFeatures.pitch.toFixed(1)} {t("units.hz")}
               </span>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <span className="text-gray-600">Loudness:</span>
-              <span className="ml-2 font-medium">
-                {audioFeatures.loudness.toFixed(1)} dB
+            <div className="p-3 theme-card rounded-lg border theme-border">
+              <span className="theme-muted">{t("features.loudness")}:</span>
+              <span className="ml-2 font-medium theme-text">
+                {audioFeatures.loudness.toFixed(1)} {t("units.db")}
               </span>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <span className="text-gray-600">Spectral Centroid:</span>
-              <span className="ml-2 font-medium">
-                {audioFeatures.centroid.toFixed(1)} Hz
+            <div className="p-3 theme-card rounded-lg border theme-border">
+              <span className="theme-muted">
+                {t("features.spectralCentroid")}:
+              </span>
+              <span className="ml-2 font-medium theme-text">
+                {audioFeatures.centroid.toFixed(1)} {t("units.hz")}
               </span>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <span className="text-gray-600">Spectral Energy:</span>
-              <span className="ml-2 font-medium">
+            <div className="p-3 theme-card rounded-lg border theme-border">
+              <span className="theme-muted">
+                {t("features.spectralEnergy")}:
+              </span>
+              <span className="ml-2 font-medium theme-text">
                 {audioFeatures.energy.toFixed(3)}
               </span>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <span className="text-gray-600">Harmonic/Noise Ratio:</span>
-              <span className="ml-2 font-medium">
+            <div className="p-3 theme-card rounded-lg border theme-border">
+              <span className="theme-muted">
+                {t("features.harmonicNoiseRatio")}:
+              </span>
+              <span className="ml-2 font-medium theme-text">
                 {audioFeatures.hfc.toFixed(1)}
               </span>
             </div>
@@ -391,7 +439,7 @@ const AudioAnalyzer: React.FC = () => {
         {/* Error message */}
         {error && (
           <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            <div className="font-bold mb-2">錯誤：</div>
+            <div className="font-bold mb-2">{t("errors.title")}</div>
             <div>{error}</div>
             <div className="mt-2 text-sm font-mono whitespace-pre-wrap">
               {JSON.stringify(

@@ -24,7 +24,8 @@
 }
 
 /* 預設為淺色主題 */
-:root {
+html:not([data-theme]),
+html[data-theme="light"] {
   --background: #f3f4f6;
   --foreground: #1f2937;
   --card-bg: #ffffff;
