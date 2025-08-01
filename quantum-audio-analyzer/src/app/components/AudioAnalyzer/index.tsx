@@ -42,35 +42,58 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const drawSpectrum = useCallback(() => {
-    if (!spectrumCanvasRef.current || !audioFeatures.spectrum) return;
+    if (!spectrumCanvasRef.current) return;
     const canvas = spectrumCanvasRef.current;
-    const ctx = canvas.getContext("2d")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     const { width, height } = canvas;
 
+    // 清除畫布
     ctx.fillStyle = "rgb(0, 0, 0)";
     ctx.fillRect(0, 0, width, height);
 
-    const spectrum = audioFeatures.spectrum;
-    if (spectrum.length === 0) return;
+    // 如果沒有分析器，直接返回
+    if (!analyzerRef.current) return;
 
-    const barWidth = width / spectrum.length;
+    const analyzer = analyzerRef.current;
+    const bufferLength = analyzer.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
 
+    // 獲取實時頻譜數據
+    analyzer.getByteFrequencyData(dataArray);
+
+    // 繪製頻譜
+    const barWidth = width / bufferLength;
+
+    // 繪製彩色頻譜條
+    for (let i = 0; i < bufferLength; i++) {
+      const barHeight = (dataArray[i] / 255) * height;
+      const x = i * barWidth;
+
+      // 根據頻率生成彩色漸變
+      const hue = (i / bufferLength) * 360;
+      ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+      ctx.fillRect(x, height - barHeight, barWidth, barHeight);
+    }
+
+    // 繪製頻譜線條
     ctx.beginPath();
-    ctx.strokeStyle = "rgb(0, 255, 0)";
+    ctx.strokeStyle = "rgb(0, 255, 255)";
     ctx.lineWidth = 2;
 
-    for (let i = 0; i < spectrum.length; i++) {
+    for (let i = 0; i < bufferLength; i++) {
       const x = i * barWidth;
-      const magnitude =
-        (Math.log10(1 + Math.abs(spectrum[i]) * 1000) * height) / 4;
+      const y = height - (dataArray[i] / 255) * height;
+
       if (i === 0) {
-        ctx.moveTo(x, height - magnitude);
+        ctx.moveTo(x, y);
       } else {
-        ctx.lineTo(x, height - magnitude);
+        ctx.lineTo(x, y);
       }
     }
     ctx.stroke();
-  }, [audioFeatures.spectrum]);
+  }, []);
 
   const drawWaveform = useCallback((timeData: Float32Array) => {
     if (!canvasRef.current) return;
@@ -355,6 +378,9 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
         <h2 className="text-2xl font-bold mb-4 theme-text">
           {t("app.audioAnalyzer")}
         </h2>
+        <QuantumVisualizer audioFeatures={audioFeatures} />
+        <br />
+        <br />
         <button
           onClick={isRecording ? stopRecording : startRecording}
           className={`px-6 py-3 rounded-full font-medium transition-colors ${
@@ -367,7 +393,7 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
             ? t("controls.stopRecording")
             : t("controls.startRecording")}
         </button>
-        <QuantumVisualizer audioFeatures={audioFeatures} />
+
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4 theme-text">
             {t("app.spectrumAnalysis")}

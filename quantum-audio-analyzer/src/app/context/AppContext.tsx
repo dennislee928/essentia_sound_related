@@ -14,9 +14,9 @@ export type Theme = "light" | "dark";
 const translations = {
   zh: {
     app: {
-      title: "量子音頻分析系統",
-      audioAnalyzer: "量子音頻分析器",
-      quantumVisualizer: "量子可視化",
+      title: "多參數量子可視化系統",
+      audioAnalyzer: "音頻分析器",
+      quantumVisualizer: "多參數量子可視化",
       spectrumAnalysis: "頻譜分析",
       waveformVisualization: "波形可視化",
       audioFeatures: "音頻特徵",
