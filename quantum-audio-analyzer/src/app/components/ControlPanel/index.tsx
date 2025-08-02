@@ -14,7 +14,7 @@ const ControlPanel: React.FC = () => {
           <h2 className="cyberpunk-title text-2xl lg:text-3xl mb-2">
             {t("app.title")}
           </h2>
-          <p className="theme-muted text-sm">量子音頻分析控制中心</p>
+          <p className="theme-muted text-sm">{t("app.controlCenter")}</p>
         </div>
 
         {/* 控制按鈕區域 */}
@@ -28,7 +28,7 @@ const ControlPanel: React.FC = () => {
               value={language}
               onChange={(e) => setLanguage(e.target.value as "zh" | "en")}
               className="cyberpunk-btn px-4 py-2 text-sm bg-transparent border-2 border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all duration-300"
-              aria-label={t("controls.language")}
+              aria-label={t("accessibility.languageSelector")}
             >
               <option value="zh" className="bg-gray-900 text-cyan-400">
                 繁體中文
@@ -47,6 +47,7 @@ const ControlPanel: React.FC = () => {
             <button
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
               className="cyberpunk-btn px-4 py-2 text-sm flex items-center gap-2 hover:scale-105 transition-transform duration-200"
+              aria-label={t("accessibility.themeToggle")}
             >
               <span className="text-lg">{theme === "light" ? "🌙" : "☀️"}</span>
               <span className="hidden sm:inline">
@@ -62,15 +63,15 @@ const ControlPanel: React.FC = () => {
         <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="theme-text text-sm">系統就緒</span>
+            <span className="theme-text text-sm">{t("status.systemReady")}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></div>
-            <span className="theme-text text-sm">量子引擎運行中</span>
+            <span className="theme-text text-sm">{t("status.quantumEngineRunning")}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
-            <span className="theme-text text-sm">音頻處理器待命</span>
+            <span className="theme-text text-sm">{t("status.audioProcessorStandby")}</span>
           </div>
         </div>
       </div>

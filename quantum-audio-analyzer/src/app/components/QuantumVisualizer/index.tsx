@@ -365,27 +365,28 @@ const QuantumVisualizer: React.FC<QuantumVisualizerProps> = ({
       <h3 className="cyberpunk-title text-lg mb-4 text-center">
         {t("app.fourierTransform")}
       </h3>
-      <div className="canvas-container w-full h-64 lg:h-80">
+            <div className="canvas-container w-full h-64 lg:h-80">
         <canvas
           ref={canvasRef}
           className="w-full h-full"
           style={{ maxWidth: "100%", height: "100%" }}
+          aria-label={t("accessibility.quantumVisualizer")}
         />
       </div>
-
+      
       {/* 量子狀態指示器 */}
       {audioFeatures && (
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
           <div className="data-card p-2">
-            <span className="theme-muted">量子態:</span>
+            <span className="theme-muted">{t("quantum.quantumState")}:</span>
             <span className="ml-1 theme-accent font-bold">
-              {audioFeatures.energy > 500 ? "激發態" : "基態"}
+              {audioFeatures.energy > 500 ? t("quantum.excitedState") : t("quantum.groundState")}
             </span>
           </div>
           <div className="data-card p-2">
-            <span className="theme-muted">糾纏度:</span>
+            <span className="theme-muted">{t("quantum.entanglement")}:</span>
             <span className="ml-1 theme-accent font-bold">
-              {Math.min(100, Math.round(audioFeatures.hfc * 10))}%
+              {Math.min(100, Math.round(audioFeatures.hfc * 10))}{t("units.percent")}
             </span>
           </div>
         </div>

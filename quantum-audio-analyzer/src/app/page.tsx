@@ -4,6 +4,7 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import ControlPanel from "./components/ControlPanel";
+import { useApp } from "./context/AppContext";
 
 interface AudioFeatures {
   pitch: number;
@@ -27,6 +28,7 @@ export default function Home() {
   const [audioFeatures, setAudioFeatures] = useState<
     AudioFeatures | undefined
   >();
+  const { t } = useApp();
 
   return (
     <main className="min-h-screen relative overflow-hidden">
@@ -53,10 +55,10 @@ export default function Home() {
         {/* 主標題區域 */}
         <div className="text-center mb-8 slide-in">
           <h1 className="cyberpunk-title text-4xl md:text-6xl mb-4">
-            QUANTUM AUDIO ANALYZER
+            {t("app.title")}
           </h1>
           <p className="theme-text text-lg md:text-xl max-w-2xl mx-auto">
-            探索音頻的量子維度 • 解碼聲音的未來
+            {t("app.subtitle")}
           </p>
         </div>
 
@@ -82,7 +84,7 @@ export default function Home() {
           >
             <div className="theme-card p-6 h-fit sticky top-8">
               <h3 className="cyberpunk-title text-xl mb-4">
-                QUANTUM VISUALIZER
+                {t("app.quantumVisualizer")}
               </h3>
               <div className="space-y-4">
                 {audioFeatures ? (
@@ -90,7 +92,7 @@ export default function Home() {
                 ) : (
                   <div className="text-center py-8">
                     <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="theme-muted">等待音頻數據...</p>
+                    <p className="theme-muted">{t("app.waitingForData")}</p>
                   </div>
                 )}
               </div>
@@ -104,24 +106,32 @@ export default function Home() {
           style={{ animationDelay: "0.8s" }}
         >
           <div className="theme-card p-6 max-w-4xl mx-auto">
-            <h3 className="cyberpunk-title text-2xl mb-4">技術規格</h3>
+            <h3 className="cyberpunk-title text-2xl mb-4">
+              {t("app.technicalSpecs")}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="data-card">
-                <h4 className="theme-accent font-bold mb-2">音頻分析</h4>
+                <h4 className="theme-accent font-bold mb-2">
+                  {t("technical.audioAnalysis")}
+                </h4>
                 <p className="theme-muted text-sm">
-                  實時頻譜分析 • 音高檢測 • 響度測量
+                  {t("technical.realTimeSpectrum")} • {t("technical.pitchDetection")} • {t("technical.loudnessMeasurement")}
                 </p>
               </div>
               <div className="data-card">
-                <h4 className="theme-accent font-bold mb-2">量子視覺化</h4>
+                <h4 className="theme-accent font-bold mb-2">
+                  {t("technical.quantumVisualization")}
+                </h4>
                 <p className="theme-muted text-sm">
-                  量子態映射 • 相位空間 • 糾纏效應
+                  {t("technical.quantumStateMapping")} • {t("technical.phaseSpace")} • {t("technical.entanglementEffects")}
                 </p>
               </div>
               <div className="data-card">
-                <h4 className="theme-accent font-bold mb-2">響應式設計</h4>
+                <h4 className="theme-accent font-bold mb-2">
+                  {t("technical.responsiveDesign")}
+                </h4>
                 <p className="theme-muted text-sm">
-                  多設備支援 • 觸控優化 • 無障礙設計
+                  {t("technical.multiDeviceSupport")} • {t("technical.touchOptimization")} • {t("technical.accessibilityDesign")}
                 </p>
               </div>
             </div>

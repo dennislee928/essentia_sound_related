@@ -21,7 +21,7 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
   onAudioData,
   onAudioFeatures,
 }) => {
-  const { t } = useApp();
+  const { t, formatUnit } = useApp();
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -388,6 +388,7 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
                 ? "bg-gradient-to-r from-red-500 to-pink-500 border-red-400 hover:from-red-600 hover:to-pink-600"
                 : "bg-gradient-to-r from-cyan-500 to-blue-500 border-cyan-400 hover:from-cyan-600 hover:to-blue-600"
             }`}
+            aria-label={t("accessibility.recordingButton")}
           >
             <span className="flex items-center gap-3">
               <span className="text-2xl">{isRecording ? "⏹️" : "🎤"}</span>
@@ -404,7 +405,7 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
         {error && (
           <div className="mt-6 p-4 bg-red-900/50 border-2 border-red-400 rounded-lg">
             <div className="font-bold mb-2 text-red-300">
-              {t("errors.title")}
+              {t("errors.title")}:
             </div>
             <div className="text-red-200">{error}</div>
           </div>
@@ -424,6 +425,7 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
               width={800}
               height={200}
               className="w-full h-48 lg:h-64"
+              aria-label={t("accessibility.spectrumAnalyzer")}
             />
           </div>
         </div>
@@ -439,6 +441,7 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
               width={800}
               height={200}
               className="w-full h-48 lg:h-64"
+              aria-label={t("accessibility.waveformDisplay")}
             />
           </div>
         </div>
@@ -450,48 +453,48 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
           {t("app.audioFeatures")}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="data-card">
+              <span className="theme-muted text-sm">{t("features.pitch")}:</span>
+              <span className="ml-2 font-bold theme-accent text-lg">
+                {formatUnit(audioFeatures.pitch, "hz")}
+              </span>
+            </div>
+            <div className="data-card">
+              <span className="theme-muted text-sm">
+                {t("features.loudness")}:
+              </span>
+              <span className="ml-2 font-bold theme-accent text-lg">
+                {formatUnit(audioFeatures.loudness, "db")}
+              </span>
+            </div>
+            <div className="data-card">
+              <span className="theme-muted text-sm">
+                {t("features.spectralCentroid")}:
+              </span>
+              <span className="ml-2 font-bold theme-accent text-lg">
+                {formatUnit(audioFeatures.centroid, "hz")}
+              </span>
+            </div>
+            <div className="data-card">
+              <span className="theme-muted text-sm">
+                {t("features.spectralEnergy")}:
+              </span>
+              <span className="ml-2 font-bold theme-accent text-lg">
+                {audioFeatures.energy.toFixed(3)}
+              </span>
+            </div>
+            <div className="data-card">
+              <span className="theme-muted text-sm">
+                {t("features.harmonicNoiseRatio")}:
+              </span>
+              <span className="ml-2 font-bold theme-accent text-lg">
+                {audioFeatures.hfc.toFixed(1)}
+              </span>
+            </div>
           <div className="data-card">
-            <span className="theme-muted text-sm">{t("features.pitch")}:</span>
+            <span className="theme-muted text-sm">{t("features.status")}:</span>
             <span className="ml-2 font-bold theme-accent text-lg">
-              {audioFeatures.pitch.toFixed(1)} {t("units.hz")}
-            </span>
-          </div>
-          <div className="data-card">
-            <span className="theme-muted text-sm">
-              {t("features.loudness")}:
-            </span>
-            <span className="ml-2 font-bold theme-accent text-lg">
-              {audioFeatures.loudness.toFixed(1)} {t("units.db")}
-            </span>
-          </div>
-          <div className="data-card">
-            <span className="theme-muted text-sm">
-              {t("features.spectralCentroid")}:
-            </span>
-            <span className="ml-2 font-bold theme-accent text-lg">
-              {audioFeatures.centroid.toFixed(1)} {t("units.hz")}
-            </span>
-          </div>
-          <div className="data-card">
-            <span className="theme-muted text-sm">
-              {t("features.spectralEnergy")}:
-            </span>
-            <span className="ml-2 font-bold theme-accent text-lg">
-              {audioFeatures.energy.toFixed(3)}
-            </span>
-          </div>
-          <div className="data-card">
-            <span className="theme-muted text-sm">
-              {t("features.harmonicNoiseRatio")}:
-            </span>
-            <span className="ml-2 font-bold theme-accent text-lg">
-              {audioFeatures.hfc.toFixed(1)}
-            </span>
-          </div>
-          <div className="data-card">
-            <span className="theme-muted text-sm">狀態:</span>
-            <span className="ml-2 font-bold theme-accent text-lg">
-              {isRecording ? "錄音中" : "待命"}
+              {isRecording ? t("controls.recording") : t("controls.standby")}
             </span>
           </div>
         </div>

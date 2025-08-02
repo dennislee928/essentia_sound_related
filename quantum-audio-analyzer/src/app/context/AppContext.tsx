@@ -194,6 +194,8 @@ interface AppContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   t: (key: string) => string;
+  formatNumber: (value: number, decimals?: number) => string;
+  formatUnit: (value: number, unit: string) => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -239,7 +241,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value = value?.[k];
     }
 
-    return typeof value === "string" ? value : key;
+    // 如果找不到翻譯，返回鍵值本身
+    if (typeof value !== "string") {
+      console.warn(`Translation key not found: ${key} for language: ${language}`);
+      return key;
+    }
+
+    return value;
+  };
+
+  // 格式化數字的輔助函數
+  const formatNumber = (value: number, decimals: number = 2): string => {
+    return value.toFixed(decimals);
+  };
+
+  // 格式化單位的輔助函數
+  const formatUnit = (value: number, unit: string): string => {
+    return `${formatNumber(value)} ${t(`units.${unit}`)}`;
   };
 
   return (
@@ -250,6 +268,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         theme,
         setTheme,
         t,
+        formatNumber,
+        formatUnit,
       }}
     >
       {children}
