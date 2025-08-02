@@ -4,6 +4,7 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import ControlPanel from "./components/ControlPanel";
+import Footer from "./components/Footer";
 import { useApp } from "./context/AppContext";
 
 interface AudioFeatures {
@@ -115,7 +116,9 @@ export default function Home() {
                   {t("technical.audioAnalysis")}
                 </h4>
                 <p className="theme-muted text-sm">
-                  {t("technical.realTimeSpectrum")} • {t("technical.pitchDetection")} • {t("technical.loudnessMeasurement")}
+                  {t("technical.realTimeSpectrum")} •{" "}
+                  {t("technical.pitchDetection")} •{" "}
+                  {t("technical.loudnessMeasurement")}
                 </p>
               </div>
               <div className="data-card">
@@ -123,7 +126,9 @@ export default function Home() {
                   {t("technical.quantumVisualization")}
                 </h4>
                 <p className="theme-muted text-sm">
-                  {t("technical.quantumStateMapping")} • {t("technical.phaseSpace")} • {t("technical.entanglementEffects")}
+                  {t("technical.quantumStateMapping")} •{" "}
+                  {t("technical.phaseSpace")} •{" "}
+                  {t("technical.entanglementEffects")}
                 </p>
               </div>
               <div className="data-card">
@@ -131,13 +136,18 @@ export default function Home() {
                   {t("technical.responsiveDesign")}
                 </h4>
                 <p className="theme-muted text-sm">
-                  {t("technical.multiDeviceSupport")} • {t("technical.touchOptimization")} • {t("technical.accessibilityDesign")}
+                  {t("technical.multiDeviceSupport")} •{" "}
+                  {t("technical.touchOptimization")} •{" "}
+                  {t("technical.accessibilityDesign")}
                 </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </main>
   );
 }

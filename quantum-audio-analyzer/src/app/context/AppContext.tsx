@@ -98,11 +98,24 @@ const translations = {
       sidebar: "側邊欄",
       footer: "頁腳",
     },
+    footer: {
+      technicalFeatures: "技術特色",
+      contactInfo: "聯絡資訊",
+      professionalLinks: "專業連結",
+      scheduleMeeting: "預約會議",
+      web3Faucet: "Web3 Faucet",
+      orcid: "ORCID",
+      copyright: "版權所有",
+      allRightsReserved: "保留所有權利",
+      projectDescription:
+        "探索音頻的量子維度，解碼聲音的未來。一個具有賽博朋克風格的量子音頻分析系統。",
+    },
   },
   en: {
     app: {
       title: "Quantum Audio Analysis System",
-      subtitle: "Explore the Quantum Dimensions of Audio • Decode the Future of Sound",
+      subtitle:
+        "Explore the Quantum Dimensions of Audio • Decode the Future of Sound",
       audioAnalyzer: "Audio Analyzer",
       quantumVisualizer: "Quantum Visualizer",
       spectrumAnalysis: "Spectrum Analysis",
@@ -163,7 +176,8 @@ const translations = {
     },
     errors: {
       title: "Error",
-      microphoneAccess: "Cannot access microphone. Please ensure permission is granted.",
+      microphoneAccess:
+        "Cannot access microphone. Please ensure permission is granted.",
       audioEngineInit: "Failed to initialize audio analysis engine",
       permissionDenied: "Microphone permission denied",
       deviceNotFound: "Audio device not found",
@@ -184,6 +198,18 @@ const translations = {
       mainContent: "Main content",
       sidebar: "Sidebar",
       footer: "Footer",
+    },
+    footer: {
+      technicalFeatures: "Technical Features",
+      contactInfo: "Contact Information",
+      professionalLinks: "Professional Links",
+      scheduleMeeting: "Schedule Meeting",
+      web3Faucet: "Web3 Faucet",
+      orcid: "ORCID",
+      copyright: "Copyright",
+      allRightsReserved: "All rights reserved",
+      projectDescription:
+        "Explore the quantum dimensions of audio, decode the future of sound. A cyberpunk-styled quantum audio analysis system.",
     },
   },
 };
@@ -243,7 +269,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     // 如果找不到翻譯，返回鍵值本身
     if (typeof value !== "string") {
-      console.warn(`Translation key not found: ${key} for language: ${language}`);
+      console.warn(
+        `Translation key not found: ${key} for language: ${language}`
+      );
       return key;
     }
 
