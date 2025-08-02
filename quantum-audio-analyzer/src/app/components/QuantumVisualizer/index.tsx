@@ -45,7 +45,11 @@ const QuantumVisualizer: React.FC<QuantumVisualizerProps> = ({
     scene.background = new THREE.Color(0x000000); // 純黑背景
     scene.fog = new THREE.Fog(0x000000, 10, 100); // 添加霧效
 
-    const camera = new THREE.PerspectiveCamera(75, 800 / 400, 0.1, 1000);
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const aspectRatio = rect.width / rect.height;
+
+    const camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1000);
     camera.position.set(0, 20, 50);
     camera.lookAt(0, 0, 0);
 
@@ -53,7 +57,7 @@ const QuantumVisualizer: React.FC<QuantumVisualizerProps> = ({
       canvas: canvasRef.current,
       antialias: true,
     });
-    renderer.setSize(800, 400);
+    renderer.setSize(rect.width, rect.height);
     renderer.setClearColor(0x000000);
 
     // === CYBERPUNK 視覺元素 ===
@@ -330,7 +334,23 @@ const QuantumVisualizer: React.FC<QuantumVisualizerProps> = ({
       animate();
     }
 
+    // 處理視窗大小變化
+    const handleResize = () => {
+      if (canvasRef.current && cameraRef.current && rendererRef.current) {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        const aspectRatio = rect.width / rect.height;
+
+        cameraRef.current.aspect = aspectRatio;
+        cameraRef.current.updateProjectionMatrix();
+        rendererRef.current.setSize(rect.width, rect.height);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
     return () => {
+      window.removeEventListener("resize", handleResize);
       if (animationIdRef.current) {
         cancelAnimationFrame(animationIdRef.current);
       }
@@ -341,17 +361,35 @@ const QuantumVisualizer: React.FC<QuantumVisualizerProps> = ({
   }, [initializeScene, animate]);
 
   return (
-    <div className="theme-card p-6 rounded-lg shadow-md text-center">
-      <h2 className="text-2xl font-bold mb-4 theme-text">
+    <div className="w-full">
+      <h3 className="cyberpunk-title text-lg mb-4 text-center">
         {t("app.fourierTransform")}
-      </h2>
-      <div className="flex justify-center">
+      </h3>
+      <div className="canvas-container w-full h-64 lg:h-80">
         <canvas
           ref={canvasRef}
-          className="canvas-container rounded-lg border theme-border"
-          style={{ maxWidth: "100%", height: "auto" }}
+          className="w-full h-full"
+          style={{ maxWidth: "100%", height: "100%" }}
         />
       </div>
+
+      {/* 量子狀態指示器 */}
+      {audioFeatures && (
+        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+          <div className="data-card p-2">
+            <span className="theme-muted">量子態:</span>
+            <span className="ml-1 theme-accent font-bold">
+              {audioFeatures.energy > 500 ? "激發態" : "基態"}
+            </span>
+          </div>
+          <div className="data-card p-2">
+            <span className="theme-muted">糾纏度:</span>
+            <span className="ml-1 theme-accent font-bold">
+              {Math.min(100, Math.round(audioFeatures.hfc * 10))}%
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

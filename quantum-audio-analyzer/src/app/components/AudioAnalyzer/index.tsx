@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useApp } from "../../context/AppContext";
-import QuantumVisualizer from "../QuantumVisualizer";
 
 interface AudioFeatures {
   pitch: number;
@@ -373,122 +372,129 @@ const AudioAnalyzer: React.FC<AudioAnalyzerProps> = ({
   );
 
   return (
-    <div className="w-full text-center">
-      <div className="theme-card p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4 theme-text">
+    <div className="w-full space-y-6">
+      {/* 主要控制區域 */}
+      <div className="theme-card p-6">
+        <h2 className="cyberpunk-title text-2xl lg:text-3xl mb-6 text-center">
           {t("app.audioAnalyzer")}
         </h2>
-        <QuantumVisualizer audioFeatures={audioFeatures} />
-        <br />
-        <br />
-        <button
-          onClick={isRecording ? stopRecording : startRecording}
-          className={`px-6 py-3 rounded-full font-medium transition-colors ${
-            isRecording
-              ? "bg-red-500 hover:bg-red-600 text-white"
-              : "bg-blue-500 hover:bg-blue-600 text-white"
-          }`}
-        >
-          {isRecording
-            ? t("controls.stopRecording")
-            : t("controls.startRecording")}
-        </button>
 
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4 theme-text">
-            {t("app.spectrumAnalysis")}
-          </h3>
-          <canvas
-            ref={spectrumCanvasRef}
-            width={800}
-            height={200}
-            className="w-full border theme-border rounded-lg bg-black"
-          />
+        {/* 錄音控制按鈕 */}
+        <div className="text-center mb-8">
+          <button
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`cyberpunk-btn text-lg px-8 py-4 ${
+              isRecording
+                ? "bg-gradient-to-r from-red-500 to-pink-500 border-red-400 hover:from-red-600 hover:to-pink-600"
+                : "bg-gradient-to-r from-cyan-500 to-blue-500 border-cyan-400 hover:from-cyan-600 hover:to-blue-600"
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <span className="text-2xl">{isRecording ? "⏹️" : "🎤"}</span>
+              <span>
+                {isRecording
+                  ? t("controls.stopRecording")
+                  : t("controls.startRecording")}
+              </span>
+            </span>
+          </button>
         </div>
 
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4 theme-text">
-            {t("app.waveformVisualization")}
-          </h3>
-          <canvas
-            ref={canvasRef}
-            width={800}
-            height={200}
-            className="w-full border theme-border rounded-lg bg-black"
-          />
-        </div>
-
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4 theme-text">
-            {t("app.audioFeatures")}
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 theme-card rounded-lg border theme-border">
-              <span className="theme-muted">{t("features.pitch")}:</span>
-              <span className="ml-2 font-medium theme-text">
-                {audioFeatures.pitch.toFixed(1)} {t("units.hz")}
-              </span>
-            </div>
-            <div className="p-3 theme-card rounded-lg border theme-border">
-              <span className="theme-muted">{t("features.loudness")}:</span>
-              <span className="ml-2 font-medium theme-text">
-                {audioFeatures.loudness.toFixed(1)} {t("units.db")}
-              </span>
-            </div>
-            <div className="p-3 theme-card rounded-lg border theme-border">
-              <span className="theme-muted">
-                {t("features.spectralCentroid")}:
-              </span>
-              <span className="ml-2 font-medium theme-text">
-                {audioFeatures.centroid.toFixed(1)} {t("units.hz")}
-              </span>
-            </div>
-            <div className="p-3 theme-card rounded-lg border theme-border">
-              <span className="theme-muted">
-                {t("features.spectralEnergy")}:
-              </span>
-              <span className="ml-2 font-medium theme-text">
-                {audioFeatures.energy.toFixed(3)}
-              </span>
-            </div>
-            <div className="p-3 theme-card rounded-lg border theme-border">
-              <span className="theme-muted">
-                {t("features.harmonicNoiseRatio")}:
-              </span>
-              <span className="ml-2 font-medium theme-text">
-                {audioFeatures.hfc.toFixed(1)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Error message */}
+        {/* 錯誤訊息 */}
         {error && (
-          <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            <div className="font-bold mb-2">{t("errors.title")}</div>
-            <div>{error}</div>
-            <div className="mt-2 text-sm font-mono whitespace-pre-wrap">
-              {JSON.stringify(
-                {
-                  name:
-                    typeof error === "object" && error
-                      ? (error as Error).name
-                      : "Unknown",
-                  message:
-                    typeof error === "object" && error
-                      ? (error as Error).message
-                      : String(error),
-                  stack:
-                    typeof error === "object" && error
-                      ? (error as Error).stack
-                      : "No stack trace",
-                },
-                null,
-                2
-              )}
+          <div className="mt-6 p-4 bg-red-900/50 border-2 border-red-400 rounded-lg">
+            <div className="font-bold mb-2 text-red-300">
+              {t("errors.title")}
             </div>
+            <div className="text-red-200">{error}</div>
           </div>
         )}
+      </div>
+
+      {/* 視覺化區域 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* 頻譜分析 */}
+        <div className="theme-card p-6">
+          <h3 className="cyberpunk-title text-xl mb-4">
+            {t("app.spectrumAnalysis")}
+          </h3>
+          <div className="canvas-container">
+            <canvas
+              ref={spectrumCanvasRef}
+              width={800}
+              height={200}
+              className="w-full h-48 lg:h-64"
+            />
+          </div>
+        </div>
+
+        {/* 波形視覺化 */}
+        <div className="theme-card p-6">
+          <h3 className="cyberpunk-title text-xl mb-4">
+            {t("app.waveformVisualization")}
+          </h3>
+          <div className="canvas-container">
+            <canvas
+              ref={canvasRef}
+              width={800}
+              height={200}
+              className="w-full h-48 lg:h-64"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 音頻特徵數據 */}
+      <div className="theme-card p-6">
+        <h3 className="cyberpunk-title text-xl mb-6 text-center">
+          {t("app.audioFeatures")}
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="data-card">
+            <span className="theme-muted text-sm">{t("features.pitch")}:</span>
+            <span className="ml-2 font-bold theme-accent text-lg">
+              {audioFeatures.pitch.toFixed(1)} {t("units.hz")}
+            </span>
+          </div>
+          <div className="data-card">
+            <span className="theme-muted text-sm">
+              {t("features.loudness")}:
+            </span>
+            <span className="ml-2 font-bold theme-accent text-lg">
+              {audioFeatures.loudness.toFixed(1)} {t("units.db")}
+            </span>
+          </div>
+          <div className="data-card">
+            <span className="theme-muted text-sm">
+              {t("features.spectralCentroid")}:
+            </span>
+            <span className="ml-2 font-bold theme-accent text-lg">
+              {audioFeatures.centroid.toFixed(1)} {t("units.hz")}
+            </span>
+          </div>
+          <div className="data-card">
+            <span className="theme-muted text-sm">
+              {t("features.spectralEnergy")}:
+            </span>
+            <span className="ml-2 font-bold theme-accent text-lg">
+              {audioFeatures.energy.toFixed(3)}
+            </span>
+          </div>
+          <div className="data-card">
+            <span className="theme-muted text-sm">
+              {t("features.harmonicNoiseRatio")}:
+            </span>
+            <span className="ml-2 font-bold theme-accent text-lg">
+              {audioFeatures.hfc.toFixed(1)}
+            </span>
+          </div>
+          <div className="data-card">
+            <span className="theme-muted text-sm">狀態:</span>
+            <span className="ml-2 font-bold theme-accent text-lg">
+              {isRecording ? "錄音中" : "待命"}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

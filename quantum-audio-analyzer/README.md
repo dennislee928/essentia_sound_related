@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Quantum Audio Analyzer
 
-## Getting Started
+一個具有賽博朋克風格的量子音頻分析系統，提供實時音頻分析和量子視覺化。
 
-First, run the development server:
+## ✨ 新功能
+
+### 🎨 賽博朋克風格設計
+
+- **霓虹色彩主題**: 使用青色、洋紅、綠色等賽博朋克經典色彩
+- **動態背景**: 移動的網格背景和浮動粒子效果
+- **霓虹發光效果**: 按鈕、標題和邊框具有發光動畫
+- **Orbitron 字體**: 使用賽博朋克風格的字體
+
+### 📱 響應式設計
+
+- **移動設備優化**: 完美適配手機和平板電腦
+- **自適應佈局**: 根據螢幕尺寸自動調整組件排列
+- **觸控友好**: 優化觸控設備的交互體驗
+- **彈性網格**: 使用 CSS Grid 和 Flexbox 實現靈活佈局
+
+### 🎯 改善的用戶體驗
+
+- **分層動畫**: 組件以錯開的時間進入畫面
+- **狀態指示器**: 實時顯示系統狀態
+- **懸停效果**: 豐富的互動反饋
+- **錯誤處理**: 美觀的錯誤訊息顯示
+
+## 🚀 技術特色
+
+### 音頻分析
+
+- 實時頻譜分析
+- 音高檢測
+- 響度測量
+- 頻譜重心計算
+- 能量分析
+- 諧波噪聲比
+
+### 量子視覺化
+
+- Three.js 3D 渲染
+- 動態波形線條
+- 粒子系統
+- 能量環
+- 全息投影效果
+- 響應式畫布
+
+### 響應式佈局
+
+- 桌面端: 12 列網格佈局
+- 平板端: 自適應列數
+- 手機端: 單列垂直佈局
+- 側邊欄: 桌面端固定，移動端堆疊
+
+## 🎮 使用方法
+
+1. **啟動應用**: `npm run dev`
+2. **授權麥克風**: 點擊錄音按鈕並允許麥克風權限
+3. **開始分析**: 點擊"開始錄音"按鈕
+4. **查看結果**: 觀察實時音頻特徵和量子視覺化
+
+## 📱 響應式斷點
+
+- **桌面端** (≥1024px): 完整功能佈局
+- **平板端** (768px-1023px): 自適應佈局
+- **手機端** (<768px): 垂直堆疊佈局
+
+## 🎨 設計系統
+
+### 色彩主題
+
+- **主色**: 青色 (#00d4ff)
+- **輔色**: 洋紅 (#ff006e)
+- **背景**: 深色漸變
+- **文字**: 高對比度
+
+### 動畫效果
+
+- **進入動畫**: slideIn
+- **懸停效果**: 發光和縮放
+- **背景動畫**: 網格移動
+- **粒子效果**: 浮動動畫
+
+## 🔧 開發
 
 ```bash
+# 安裝依賴
+npm install
+
+# 開發模式
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# 建置
+npm run build
+
+# 啟動生產版本
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📦 依賴
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 15**: React 框架
+- **Three.js**: 3D 視覺化
+- **Tailwind CSS**: 樣式框架
+- **TypeScript**: 類型安全
+- **Web Audio API**: 音頻處理
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🎯 未來計劃
 
-## Learn More
+- [ ] 更多量子視覺化效果
+- [ ] 音頻文件上傳
+- [ ] 數據導出功能
+- [ ] 更多語言支援
+- [ ] 主題自定義
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**享受探索音頻的量子維度！** 🎵⚛️
