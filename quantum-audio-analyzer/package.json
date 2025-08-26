@@ -10,15 +10,13 @@
   },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
-    "essentia.js": "0.1.3",
-
-    "next": "15.4.5",
-
+    "essentia.js": "0.0.9",
+    "next": "15.4.2",
     "next-intl": "^4.3.4",
     "qiskit": "^0.9.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "three": "^0.179.1",
+    "three": "^0.179.0",
     "three.js": "^0.77.1"
   },
   "devDependencies": {
